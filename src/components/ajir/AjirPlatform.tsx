@@ -11,8 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAjirAuth } from "@/hooks/use-ajir-auth";
 import type { BookingRow, FavoriteRow, PaymentRow, PropertyRow, ReviewRow } from "@/types/ajir";
+import stayOne from "@/assets/ajir-stays-1.jpg";
+import stayTwo from "@/assets/ajir-stays-2.jpg";
+import stayThree from "@/assets/ajir-stays-3.jpg";
 
-const fallbackImages = ["/src/assets/ajir-stays-1.jpg", "/src/assets/ajir-stays-2.jpg", "/src/assets/ajir-stays-3.jpg"];
+const fallbackImages = [stayOne, stayTwo, stayThree];
 
 type Trip = BookingRow & { properties: Pick<PropertyRow, "title" | "city" | "country" | "host_id" | "images" | "price"> | null };
 type FavoriteWithProperty = FavoriteRow & { properties: Pick<PropertyRow, "title" | "city" | "country" | "images" | "price"> | null };
