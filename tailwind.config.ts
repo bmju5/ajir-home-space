@@ -59,11 +59,25 @@ export default {
         },
       },
       borderRadius: {
+        ajir: "1rem",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        sans: ["Airbnb Cereal", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+      },
+      boxShadow: {
+        "ajir-soft": "var(--shadow-ajir-soft)",
+        "ajir-card": "var(--shadow-ajir-card)",
+        "ajir-search": "var(--shadow-ajir-search)",
+        "ajir-float": "var(--shadow-ajir-float)",
+      },
       keyframes: {
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
         "accordion-down": {
           from: {
             height: "0",
@@ -82,6 +96,7 @@ export default {
         },
       },
       animation: {
+        "fade-up": "fade-up 0.45s ease-out both",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
