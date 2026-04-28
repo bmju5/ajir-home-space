@@ -1,6 +1,7 @@
 import { Footer } from "@/components/ajir/Footer";
 import { Header } from "@/components/ajir/Header";
 import { InspirationSection } from "@/components/ajir/InspirationSection";
+import { AjirPlatform } from "@/components/ajir/AjirPlatform";
 import { PropertyCarousel } from "@/components/ajir/PropertyCarousel";
 import { popularProperties, trendingProperties } from "@/data/ajir-properties";
 
@@ -15,6 +16,7 @@ const Index = () => {
         <PropertyCarousel title="Beach stays near you" properties={[...popularProperties].reverse()} />
         <PropertyCarousel title="Fresh city escapes" properties={[...trendingProperties].reverse()} />
       </div>
+      <AjirPlatform />
       <InspirationSection />
       <Footer />
     </main>
