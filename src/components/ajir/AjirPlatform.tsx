@@ -180,18 +180,20 @@ export const AjirPlatform = () => {
     if (!requireUser() || !selectedProperty) return;
     const nights = nightsBetween(booking.checkIn, booking.checkOut);
     const total = nights * Number(selectedProperty.price);
+    const discount = applyStayCoupon(coupons, booking.coupon, total);
+    if (booking.coupon && discount.discount === 0) return toast.error(discount.message || "Coupon cannot be applied.");
     const { data, error } = await supabase.from("bookings").insert({
       property_id: selectedProperty.id,
       guest_id: user!.id,
       check_in: booking.checkIn,
       check_out: booking.checkOut,
       guests: Number(booking.guests),
-      total_price: total,
+      total_price: discount.final,
     }).select("id").single();
     if (error) return toast.error(error.message);
-    await supabase.from("payments").insert({ booking_id: data.id, user_id: user!.id, amount: total, status: "succeeded", provider_payment_id: `sim_${Date.now()}` });
-    toast.success("Booking created and payment simulated.");
-    setBooking({ checkIn: "", checkOut: "", guests: "1" });
+    await supabase.from("payments").insert({ booking_id: data.id, user_id: user!.id, amount: discount.final, status: "succeeded", provider_payment_id: `sim_${Date.now()}` });
+    toast.success(discount.discount > 0 ? `Booking created with ${discount.message}` : "Booking created and payment simulated.");
+    setBooking({ checkIn: "", checkOut: "", guests: "1", coupon: "" });
     await loadPrivate();
   };
 
