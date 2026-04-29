@@ -5,7 +5,7 @@ type Section = "destination" | "dates" | "guests" | null;
 
 type SearchBarProps = { compact?: boolean; initialSection?: Section };
 
-const destinations = ["Marrakech", "Casablanca", "Tangier", "Taghazout", "Rabat"];
+const destinations = ["Algiers", "Oran", "Constantine", "Tipaza", "Béjaïa"];
 
 export const SearchBar = ({ compact = false, initialSection = null }: SearchBarProps) => {
   const [active, setActive] = useState<Section>(initialSection);
@@ -51,7 +51,7 @@ export const SearchBar = ({ compact = false, initialSection = null }: SearchBarP
               {destinations.map((destination) => (
                 <button key={destination} type="button" className="flex w-full items-center gap-4 rounded-xl p-3 text-left transition hover:bg-secondary">
                   <span className="grid h-12 w-12 place-items-center rounded-xl bg-muted text-xl">⌂</span>
-                  <span><strong className="block text-sm text-foreground">{destination}</strong><span className="text-sm text-muted-foreground">Popular stays and weekend homes</span></span>
+                  <span><strong className="block text-sm text-foreground">{destination}</strong><span className="text-sm text-muted-foreground">Popular Algeria stays and weekend homes</span></span>
                 </button>
               ))}
             </div>
