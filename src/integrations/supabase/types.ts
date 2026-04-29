@@ -61,6 +61,158 @@ export type Database = {
           },
         ]
       }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          min_spend: number
+          scope: Database["public"]["Enums"]["coupon_scope"]
+          starts_at: string
+          title: string
+          updated_at: string
+          used_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_spend?: number
+          scope?: Database["public"]["Enums"]["coupon_scope"]
+          starts_at?: string
+          title: string
+          updated_at?: string
+          used_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_spend?: number
+          scope?: Database["public"]["Enums"]["coupon_scope"]
+          starts_at?: string
+          title?: string
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: []
+      }
+      experience_bookings: {
+        Row: {
+          booking_date: string
+          coupon_code: string | null
+          created_at: string
+          discount_amount: number
+          experience_id: string
+          final_price: number
+          guests: number
+          id: string
+          status: Database["public"]["Enums"]["ajir_order_status"]
+          total_price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          booking_date: string
+          coupon_code?: string | null
+          created_at?: string
+          discount_amount?: number
+          experience_id: string
+          final_price?: number
+          guests?: number
+          id?: string
+          status?: Database["public"]["Enums"]["ajir_order_status"]
+          total_price?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          booking_date?: string
+          coupon_code?: string | null
+          created_at?: string
+          discount_amount?: number
+          experience_id?: string
+          final_price?: number
+          guests?: number
+          id?: string
+          status?: Database["public"]["Enums"]["ajir_order_status"]
+          total_price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experience_bookings_experience_id_fkey"
+            columns: ["experience_id"]
+            isOneToOne: false
+            referencedRelation: "experiences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experiences: {
+        Row: {
+          available_dates: string[]
+          created_at: string
+          currency: string
+          description: string
+          duration_hours: number
+          id: string
+          is_active: boolean
+          location: string
+          max_guests: number
+          price: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          available_dates?: string[]
+          created_at?: string
+          currency?: string
+          description?: string
+          duration_hours?: number
+          id?: string
+          is_active?: boolean
+          location: string
+          max_guests?: number
+          price?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          available_dates?: string[]
+          created_at?: string
+          currency?: string
+          description?: string
+          duration_hours?: number
+          id?: string
+          is_active?: boolean
+          location?: string
+          max_guests?: number
+          price?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -89,6 +241,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      gift_cards: {
+        Row: {
+          amount: number
+          balance: number
+          code: string
+          created_at: string
+          id: string
+          message: string | null
+          purchaser_id: string
+          recipient_email: string
+          recipient_name: string | null
+          sent_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          balance?: number
+          code: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          purchaser_id: string
+          recipient_email: string
+          recipient_name?: string | null
+          sent_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          balance?: number
+          code?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          purchaser_id?: string
+          recipient_email?: string
+          recipient_name?: string | null
+          sent_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       payments: {
         Row: {
@@ -284,6 +481,107 @@ export type Database = {
           },
         ]
       }
+      service_orders: {
+        Row: {
+          coupon_code: string | null
+          created_at: string
+          discount_amount: number
+          final_price: number
+          id: string
+          quantity: number
+          service_date: string
+          service_id: string
+          service_time: string
+          status: Database["public"]["Enums"]["ajir_order_status"]
+          total_price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coupon_code?: string | null
+          created_at?: string
+          discount_amount?: number
+          final_price?: number
+          id?: string
+          quantity?: number
+          service_date: string
+          service_id: string
+          service_time: string
+          status?: Database["public"]["Enums"]["ajir_order_status"]
+          total_price?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coupon_code?: string | null
+          created_at?: string
+          discount_amount?: number
+          final_price?: number
+          id?: string
+          quantity?: number
+          service_date?: string
+          service_id?: string
+          service_time?: string
+          status?: Database["public"]["Enums"]["ajir_order_status"]
+          total_price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_orders_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          available_times: string[]
+          category: string
+          created_at: string
+          currency: string
+          description: string
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          location: string
+          price: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          available_times?: string[]
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          location: string
+          price?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          available_times?: string[]
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          location?: string
+          price?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -313,8 +611,11 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      ajir_order_status: "pending" | "confirmed" | "completed" | "cancelled"
       app_role: "admin" | "host" | "guest"
       booking_status: "pending" | "confirmed" | "cancelled" | "completed"
+      coupon_scope: "stays" | "services" | "experiences" | "all"
+      discount_type: "percent" | "fixed"
       payment_status:
         | "pending"
         | "processing"
@@ -457,8 +758,11 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ajir_order_status: ["pending", "confirmed", "completed", "cancelled"],
       app_role: ["admin", "host", "guest"],
       booking_status: ["pending", "confirmed", "cancelled", "completed"],
+      coupon_scope: ["stays", "services", "experiences", "all"],
+      discount_type: ["percent", "fixed"],
       payment_status: [
         "pending",
         "processing",
