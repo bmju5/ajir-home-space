@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BedDouble, CalendarCheck, CheckCircle2, Heart, Home, Loader2, Plus, Star, Trash2, XCircle } from "lucide-react";
+import { BedDouble, CalendarCheck, CheckCircle2, Heart, Home, Loader2, MapPin, Plus, Star, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,8 +36,8 @@ type PropertyForm = {
 
 const emptyForm: PropertyForm = {
   title: "",
-  city: "Marrakech",
-  country: "Morocco",
+  city: "Algiers",
+  country: "Algeria",
   price: "120",
   description: "",
   address: "",
@@ -121,7 +121,7 @@ export const AjirPlatform = () => {
     const { error } = await supabase.from("properties").insert({
       host_id: user!.id,
       title: form.title,
-      description: form.description || "A comfortable ajir stay ready for guests.",
+      description: form.description || "A comfortable ajir stay in Algeria ready for guests.",
       price: Number(form.price),
       property_type: "apartment",
       max_guests: Number(form.maxGuests),
@@ -216,11 +216,11 @@ export const AjirPlatform = () => {
   const imageFor = (property?: Pick<PropertyRow, "images"> | null) => property?.images?.[0] || fallbackImages[0];
 
   return (
-    <section className="border-t border-border bg-background px-5 py-12 md:px-10">
+    <section id="host" className="border-t border-border bg-background px-5 py-12 md:px-10">
       <div className="mx-auto max-w-[1760px] space-y-8">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-black text-foreground md:text-3xl">ajir full booking platform</h2>
-          <p className="max-w-3xl text-sm text-muted-foreground">Browse published homes, host new listings, manage bookings, keep a wishlist, post reviews, and track simulated payments.</p>
+          <p className="max-w-3xl text-sm text-muted-foreground">Browse Algeria homes, host new listings, manage bookings, keep a wishlist, post reviews, and track simulated payments.</p>
         </div>
 
         <Tabs defaultValue="explore" className="w-full">
@@ -242,6 +242,7 @@ export const AjirPlatform = () => {
                     <img src={imageFor(property)} alt={property.title} className="aspect-[1.25/1] w-full object-cover" />
                     <CardContent className="space-y-2 p-4">
                       <div className="flex items-start justify-between gap-2"><strong className="text-foreground">{property.city}, {property.country}</strong><Badge variant="secondary">{property.property_type}</Badge></div>
+                      <p className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3" /> {property.address || "Verified Algeria location"}</p>
                       <p className="line-clamp-1 text-sm text-muted-foreground">{property.title}</p>
                       <p className="font-black text-foreground">${Number(property.price).toFixed(0)} night</p>
                     </CardContent>
