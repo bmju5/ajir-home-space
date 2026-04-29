@@ -234,6 +234,8 @@ export const AjirPlatform = () => {
   };
 
   const imageFor = (property?: Pick<PropertyRow, "images"> | null) => property?.images?.[0] || fallbackImages[0];
+  const stayTotal = selectedProperty && booking.checkIn && booking.checkOut ? nightsBetween(booking.checkIn, booking.checkOut) * Number(selectedProperty.price) : Number(selectedProperty?.price ?? 0);
+  const stayDiscount = applyStayCoupon(coupons, booking.coupon, stayTotal);
 
   return (
     <section id="host" className="border-t border-border bg-background px-5 py-12 md:px-10">
@@ -287,6 +289,8 @@ export const AjirPlatform = () => {
                     <div className="space-y-2"><Label>Check out</Label><Input type="date" value={booking.checkOut} onChange={(e) => setBooking({ ...booking, checkOut: e.target.value })} required /></div>
                   </div>
                   <div className="space-y-2"><Label>Guests</Label><Input type="number" min="1" max={selectedProperty?.max_guests ?? 16} value={booking.guests} onChange={(e) => setBooking({ ...booking, guests: e.target.value })} required /></div>
+                  <div className="space-y-2"><Label>Discount code</Label><Input value={booking.coupon} onChange={(e) => setBooking({ ...booking, coupon: e.target.value })} placeholder="AJIR15 or STAY25" /></div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-ajir bg-secondary p-3 text-sm"><span className="flex items-center gap-2"><Tag className="h-4 w-4" /> {stayDiscount.message || "Discount is calculated before payment"}</span><strong>${stayDiscount.final.toFixed(2)}</strong></div>
                   <div className="flex gap-2">
                     <Button type="submit" className="flex-1 rounded-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={!selectedProperty || authLoading}>{authLoading ? <Loader2 className="animate-spin" /> : <BedDouble />} Reserve</Button>
                     {selectedProperty && <Button type="button" variant="outline" className="rounded-full" onClick={() => toggleFavorite(selectedProperty.id)}><Heart className={favorites.some((f) => f.property_id === selectedProperty.id) ? "fill-primary" : ""} /></Button>}
