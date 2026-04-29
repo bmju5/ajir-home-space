@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BedDouble, CalendarCheck, CheckCircle2, Heart, Home, Loader2, MapPin, Plus, Star, Trash2, XCircle } from "lucide-react";
+import { BedDouble, CalendarCheck, CheckCircle2, Heart, Home, Loader2, MapPin, Plus, Star, Tag, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAjirAuth } from "@/hooks/use-ajir-auth";
+import type { Database } from "@/integrations/supabase/types";
 import type { BookingRow, FavoriteRow, PaymentRow, PropertyRow, ReviewRow } from "@/types/ajir";
 import stayOne from "@/assets/ajir-stays-1.jpg";
 import stayTwo from "@/assets/ajir-stays-2.jpg";
@@ -19,6 +20,7 @@ const fallbackImages = [stayOne, stayTwo, stayThree];
 
 type Trip = BookingRow & { properties: Pick<PropertyRow, "title" | "city" | "country" | "host_id" | "images" | "price"> | null };
 type FavoriteWithProperty = FavoriteRow & { properties: Pick<PropertyRow, "title" | "city" | "country" | "images" | "price"> | null };
+type Coupon = Database["public"]["Tables"]["coupons"]["Row"];
 
 type PropertyForm = {
   title: string;
@@ -50,6 +52,17 @@ const emptyForm: PropertyForm = {
 
 const toImageList = (value: string) => value.split("\n").map((item) => item.trim()).filter(Boolean);
 const nightsBetween = (start: string, end: string) => Math.max(1, Math.ceil((new Date(end).getTime() - new Date(start).getTime()) / 86400000));
+const applyStayCoupon = (coupons: Coupon[], code: string, total: number) => {
+  const coupon = coupons.find((item) => item.code.toUpperCase() === code.trim().toUpperCase());
+  const now = Date.now();
+  if (!code.trim()) return { discount: 0, final: total, coupon: null as Coupon | null, message: "" };
+  if (!coupon || !coupon.is_active) return { discount: 0, final: total, coupon: null as Coupon | null, message: "Coupon not found." };
+  if (coupon.scope !== "all" && coupon.scope !== "stays") return { discount: 0, final: total, coupon, message: `Coupon is only for ${coupon.scope}.` };
+  if (new Date(coupon.starts_at).getTime() > now || (coupon.expires_at && new Date(coupon.expires_at).getTime() < now)) return { discount: 0, final: total, coupon, message: "Coupon is not currently valid." };
+  if (total < Number(coupon.min_spend)) return { discount: 0, final: total, coupon, message: `Minimum spend is $${Number(coupon.min_spend).toFixed(0)}.` };
+  const discount = Math.min(total, coupon.discount_type === "percent" ? total * Number(coupon.discount_value) / 100 : Number(coupon.discount_value));
+  return { discount, final: total - discount, coupon, message: `Discount applied: -$${discount.toFixed(2)}` };
+};
 
 export const AjirPlatform = () => {
   const { user, loading: authLoading } = useAjirAuth();
@@ -61,17 +74,22 @@ export const AjirPlatform = () => {
   const [favorites, setFavorites] = useState<FavoriteWithProperty[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
-  const [booking, setBooking] = useState({ checkIn: "", checkOut: "", guests: "1" });
+  const [booking, setBooking] = useState({ checkIn: "", checkOut: "", guests: "1", coupon: "" });
   const [review, setReview] = useState({ rating: "5", comment: "" });
   const [form, setForm] = useState<PropertyForm>(emptyForm);
 
   const selectedProperty = useMemo(() => properties.find((property) => property.id === selectedPropertyId) ?? properties[0], [properties, selectedPropertyId]);
 
   const loadPublic = async () => {
-    const { data, error } = await supabase.from("properties").select("*").eq("status", "published").order("created_at", { ascending: false });
+    const [{ data, error }, couponResult] = await Promise.all([
+      supabase.from("properties").select("*").eq("status", "published").order("created_at", { ascending: false }),
+      supabase.from("coupons").select("*").eq("is_active", true).order("created_at", { ascending: false }),
+    ]);
     if (error) toast.error(error.message);
     setProperties(data ?? []);
+    if (couponResult.data) setCoupons(couponResult.data);
     setSelectedPropertyId((current) => current || data?.[0]?.id || "");
   };
 
