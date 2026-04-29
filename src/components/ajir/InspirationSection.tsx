@@ -1,10 +1,10 @@
 import { useState } from "react";
 
 const tabs = {
-  trending: ["Marrakech", "Casablanca", "Agadir", "Tangier", "Rabat", "Fes", "Essaouira", "Chefchaouen"],
-  beaches: ["Taghazout", "Dakhla", "Oualidia", "Asilah", "Saidia", "Martil", "Tamraght", "El Jadida"],
-  mountains: ["Ifrane", "Ourika", "Oukaimeden", "Azrou", "Imilchil", "Midelt", "Toubkal", "Bin El Ouidane"],
-  cities: ["Paris", "Madrid", "Lisbon", "Istanbul", "Dubai", "London", "Rome", "Doha"],
+  trending: ["Algiers", "Oran", "Constantine", "Tipaza", "Béjaïa", "Annaba", "Tlemcen", "Ghardaïa"],
+  beaches: ["Aïn El Turk", "Sidi Fredj", "Tichy", "Jijel", "Skikda", "Mostaganem", "Cherchell", "El Kala"],
+  mountains: ["Tikjda", "Chréa", "Tlemcen National Park", "Djurdjura", "Aurès", "Theniet El Had", "Akfadou", "Tassili n’Ajjer"],
+  cities: ["Sétif", "Batna", "Blida", "Tizi Ouzou", "Sidi Bel Abbès", "Biskra", "Ouargla", "Timimoun"],
 };
 
 export const InspirationSection = () => {
