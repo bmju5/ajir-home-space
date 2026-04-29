@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { Globe, Menu, UserRound } from "lucide-react";
+import { Gift, Globe, MapPin, Menu, Tag, UserRound } from "lucide-react";
 import { AjirLogo } from "./AjirLogo";
 import { AuthDialog } from "./AuthDialog";
 import { SearchBar } from "./SearchBar";
 import { useAjirAuth } from "@/hooks/use-ajir-auth";
 
 const navItems = [
-  { video: "/videos/house.webm", label: "Stays" },
-  { video: "/videos/balloon.webm", label: "Experiences" },
-  { video: "/videos/consierge.webm", label: "Services" },
+  { video: "/videos/house.webm", label: "Stays", href: "#stays" },
+  { video: "/videos/balloon.webm", label: "Experiences", href: "#experiences" },
+  { video: "/videos/consierge.webm", label: "Services", href: "#services" },
 ];
 
 export const Header = () => {
@@ -31,15 +31,18 @@ export const Header = () => {
         {scrolled ? <SearchBar compact /> : (
           <div className="hidden items-center gap-6 lg:flex">
             {navItems.map((item) => (
-              <button key={item.label} type="button" className="group flex items-center gap-1 border-b-2 border-transparent pb-2 text-sm font-bold text-muted-foreground transition hover:border-primary hover:text-primary">
+              <a key={item.label} href={item.href} className="group flex items-center gap-1 border-b-2 border-transparent pb-2 text-sm font-bold text-muted-foreground transition hover:border-primary hover:text-primary">
                 <video src={item.video} autoPlay muted playsInline loop className="h-12 w-12 transition-transform group-hover:scale-110" />
                 {item.label}
-              </button>
+              </a>
             ))}
           </div>
         )}
         <div className="flex items-center gap-2">
-          <button type="button" className="hidden rounded-full px-4 py-3 text-sm font-bold text-foreground transition hover:bg-secondary md:block">List your home</button>
+          <a href="#map" aria-label="Map" className="hidden rounded-full p-3 text-foreground transition hover:bg-secondary xl:block"><MapPin className="h-5 w-5" /></a>
+          <a href="#gift-cards" aria-label="Gift cards" className="hidden rounded-full p-3 text-foreground transition hover:bg-secondary xl:block"><Gift className="h-5 w-5" /></a>
+          <a href="#offers" aria-label="Offers" className="hidden rounded-full p-3 text-foreground transition hover:bg-secondary xl:block"><Tag className="h-5 w-5" /></a>
+          <a href="#host" className="hidden rounded-full px-4 py-3 text-sm font-bold text-foreground transition hover:bg-secondary md:block">List your home</a>
           <button type="button" aria-label="Language" className="rounded-full p-3 text-foreground transition hover:bg-secondary"><Globe className="h-5 w-5" /></button>
           <button type="button" aria-label="Account menu" onClick={() => user ? void signOut() : setAuthOpen(true)} className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-foreground shadow-ajir-soft transition hover:shadow-ajir-card"><Menu className="h-4 w-4" /><span className="grid h-8 w-8 place-items-center rounded-full bg-primary text-primary-foreground">{user ? (profile?.name?.[0] ?? user.email?.[0] ?? "A").toUpperCase() : <UserRound className="h-4 w-4" />}</span></button>
         </div>
