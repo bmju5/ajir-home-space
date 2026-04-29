@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bike, CalendarCheck, Clock, Copy, CreditCard, Gift, Home, MapPin, Plus, Sparkles, Tag, Utensils } from "lucide-react";
+import { Bike, CalendarCheck, Clock, CreditCard, Gift, Home, MapPin, Plus, Sparkles, Tag, Utensils } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
