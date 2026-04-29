@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BedDouble, CalendarCheck, CheckCircle2, Heart, Home, Loader2, MapPin, Plus, Star, Trash2, XCircle } from "lucide-react";
+import { BedDouble, CalendarCheck, CheckCircle2, Heart, Home, Loader2, MapPin, Plus, Star, Tag, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAjirAuth } from "@/hooks/use-ajir-auth";
+import type { Database } from "@/integrations/supabase/types";
 import type { BookingRow, FavoriteRow, PaymentRow, PropertyRow, ReviewRow } from "@/types/ajir";
 import stayOne from "@/assets/ajir-stays-1.jpg";
 import stayTwo from "@/assets/ajir-stays-2.jpg";
@@ -19,6 +20,7 @@ const fallbackImages = [stayOne, stayTwo, stayThree];
 
 type Trip = BookingRow & { properties: Pick<PropertyRow, "title" | "city" | "country" | "host_id" | "images" | "price"> | null };
 type FavoriteWithProperty = FavoriteRow & { properties: Pick<PropertyRow, "title" | "city" | "country" | "images" | "price"> | null };
+type Coupon = Database["public"]["Tables"]["coupons"]["Row"];
 
 type PropertyForm = {
   title: string;
@@ -50,6 +52,17 @@ const emptyForm: PropertyForm = {
 
 const toImageList = (value: string) => value.split("\n").map((item) => item.trim()).filter(Boolean);
 const nightsBetween = (start: string, end: string) => Math.max(1, Math.ceil((new Date(end).getTime() - new Date(start).getTime()) / 86400000));
+const applyStayCoupon = (coupons: Coupon[], code: string, total: number) => {
+  const coupon = coupons.find((item) => item.code.toUpperCase() === code.trim().toUpperCase());
+  const now = Date.now();
+  if (!code.trim()) return { discount: 0, final: total, coupon: null as Coupon | null, message: "" };
+  if (!coupon || !coupon.is_active) return { discount: 0, final: total, coupon: null as Coupon | null, message: "Coupon not found." };
+  if (coupon.scope !== "all" && coupon.scope !== "stays") return { discount: 0, final: total, coupon, message: `Coupon is only for ${coupon.scope}.` };
+  if (new Date(coupon.starts_at).getTime() > now || (coupon.expires_at && new Date(coupon.expires_at).getTime() < now)) return { discount: 0, final: total, coupon, message: "Coupon is not currently valid." };
+  if (total < Number(coupon.min_spend)) return { discount: 0, final: total, coupon, message: `Minimum spend is $${Number(coupon.min_spend).toFixed(0)}.` };
+  const discount = Math.min(total, coupon.discount_type === "percent" ? total * Number(coupon.discount_value) / 100 : Number(coupon.discount_value));
+  return { discount, final: total - discount, coupon, message: `Discount applied: -$${discount.toFixed(2)}` };
+};
 
 export const AjirPlatform = () => {
   const { user, loading: authLoading } = useAjirAuth();
@@ -61,17 +74,22 @@ export const AjirPlatform = () => {
   const [favorites, setFavorites] = useState<FavoriteWithProperty[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
-  const [booking, setBooking] = useState({ checkIn: "", checkOut: "", guests: "1" });
+  const [booking, setBooking] = useState({ checkIn: "", checkOut: "", guests: "1", coupon: "" });
   const [review, setReview] = useState({ rating: "5", comment: "" });
   const [form, setForm] = useState<PropertyForm>(emptyForm);
 
   const selectedProperty = useMemo(() => properties.find((property) => property.id === selectedPropertyId) ?? properties[0], [properties, selectedPropertyId]);
 
   const loadPublic = async () => {
-    const { data, error } = await supabase.from("properties").select("*").eq("status", "published").order("created_at", { ascending: false });
+    const [{ data, error }, couponResult] = await Promise.all([
+      supabase.from("properties").select("*").eq("status", "published").order("created_at", { ascending: false }),
+      supabase.from("coupons").select("*").eq("is_active", true).order("created_at", { ascending: false }),
+    ]);
     if (error) toast.error(error.message);
     setProperties(data ?? []);
+    if (couponResult.data) setCoupons(couponResult.data);
     setSelectedPropertyId((current) => current || data?.[0]?.id || "");
   };
 
@@ -162,18 +180,20 @@ export const AjirPlatform = () => {
     if (!requireUser() || !selectedProperty) return;
     const nights = nightsBetween(booking.checkIn, booking.checkOut);
     const total = nights * Number(selectedProperty.price);
+    const discount = applyStayCoupon(coupons, booking.coupon, total);
+    if (booking.coupon && discount.discount === 0) return toast.error(discount.message || "Coupon cannot be applied.");
     const { data, error } = await supabase.from("bookings").insert({
       property_id: selectedProperty.id,
       guest_id: user!.id,
       check_in: booking.checkIn,
       check_out: booking.checkOut,
       guests: Number(booking.guests),
-      total_price: total,
+      total_price: discount.final,
     }).select("id").single();
     if (error) return toast.error(error.message);
-    await supabase.from("payments").insert({ booking_id: data.id, user_id: user!.id, amount: total, status: "succeeded", provider_payment_id: `sim_${Date.now()}` });
-    toast.success("Booking created and payment simulated.");
-    setBooking({ checkIn: "", checkOut: "", guests: "1" });
+    await supabase.from("payments").insert({ booking_id: data.id, user_id: user!.id, amount: discount.final, status: "succeeded", provider_payment_id: `sim_${Date.now()}` });
+    toast.success(discount.discount > 0 ? `Booking created with ${discount.message}` : "Booking created and payment simulated.");
+    setBooking({ checkIn: "", checkOut: "", guests: "1", coupon: "" });
     await loadPrivate();
   };
 
@@ -214,6 +234,8 @@ export const AjirPlatform = () => {
   };
 
   const imageFor = (property?: Pick<PropertyRow, "images"> | null) => property?.images?.[0] || fallbackImages[0];
+  const stayTotal = selectedProperty && booking.checkIn && booking.checkOut ? nightsBetween(booking.checkIn, booking.checkOut) * Number(selectedProperty.price) : Number(selectedProperty?.price ?? 0);
+  const stayDiscount = applyStayCoupon(coupons, booking.coupon, stayTotal);
 
   return (
     <section id="host" className="border-t border-border bg-background px-5 py-12 md:px-10">
@@ -267,6 +289,8 @@ export const AjirPlatform = () => {
                     <div className="space-y-2"><Label>Check out</Label><Input type="date" value={booking.checkOut} onChange={(e) => setBooking({ ...booking, checkOut: e.target.value })} required /></div>
                   </div>
                   <div className="space-y-2"><Label>Guests</Label><Input type="number" min="1" max={selectedProperty?.max_guests ?? 16} value={booking.guests} onChange={(e) => setBooking({ ...booking, guests: e.target.value })} required /></div>
+                  <div className="space-y-2"><Label>Discount code</Label><Input value={booking.coupon} onChange={(e) => setBooking({ ...booking, coupon: e.target.value })} placeholder="AJIR15 or STAY25" /></div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-ajir bg-secondary p-3 text-sm"><span className="flex items-center gap-2"><Tag className="h-4 w-4" /> {stayDiscount.message || "Discount is calculated before payment"}</span><strong>${stayDiscount.final.toFixed(2)}</strong></div>
                   <div className="flex gap-2">
                     <Button type="submit" className="flex-1 rounded-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={!selectedProperty || authLoading}>{authLoading ? <Loader2 className="animate-spin" /> : <BedDouble />} Reserve</Button>
                     {selectedProperty && <Button type="button" variant="outline" className="rounded-full" onClick={() => toggleFavorite(selectedProperty.id)}><Heart className={favorites.some((f) => f.property_id === selectedProperty.id) ? "fill-primary" : ""} /></Button>}
