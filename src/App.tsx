@@ -6,6 +6,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AjirAuthProvider } from "@/hooks/use-ajir-auth";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Stays from "./pages/Stays.tsx";
+import Experiences from "./pages/Experiences.tsx";
+import Services from "./pages/Services.tsx";
+import Map from "./pages/Map.tsx";
+import GiftCards from "./pages/GiftCards.tsx";
+import Offers from "./pages/Offers.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +25,13 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/stays" element={<Stays />} />
+            <Route path="/experiences" element={<Experiences />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/map" element={<Map />} />
+            <Route path="/gift-cards" element={<GiftCards />} />
+            <Route path="/offers" element={<Offers />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
