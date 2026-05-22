@@ -1,5 +1,5 @@
 import { PageShell } from "@/components/ajir/PageShell";
-import { AjirPlatform } from "@/components/ajir/AjirPlatform";
+import { StaysSection } from "@/components/ajir/sections/StaysSection";
 
-const Stays = () => <PageShell><AjirPlatform /></PageShell>;
+const Stays = () => <PageShell><StaysSection /></PageShell>;
 export default Stays;
