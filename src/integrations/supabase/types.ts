@@ -14,10 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      ajir_bundles: {
+        Row: {
+          billing: string
+          category: string
+          created_at: string
+          currency: string
+          description: string
+          features: string[]
+          id: string
+          image_url: string | null
+          is_active: boolean
+          price: number
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          billing?: string
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          features?: string[]
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price?: number
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          billing?: string
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          features?: string[]
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price?: number
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           check_in: string
+          check_in_time: string | null
           check_out: string
+          check_out_time: string | null
           created_at: string
           guest_id: string
           guests: number
@@ -26,10 +76,13 @@ export type Database = {
           status: Database["public"]["Enums"]["booking_status"]
           total_price: number
           updated_at: string
+          variant_id: string | null
         }
         Insert: {
           check_in: string
+          check_in_time?: string | null
           check_out: string
+          check_out_time?: string | null
           created_at?: string
           guest_id: string
           guests?: number
@@ -38,10 +91,13 @@ export type Database = {
           status?: Database["public"]["Enums"]["booking_status"]
           total_price?: number
           updated_at?: string
+          variant_id?: string | null
         }
         Update: {
           check_in?: string
+          check_in_time?: string | null
           check_out?: string
+          check_out_time?: string | null
           created_at?: string
           guest_id?: string
           guests?: number
@@ -50,6 +106,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["booking_status"]
           total_price?: number
           updated_at?: string
+          variant_id?: string | null
         }
         Relationships: [
           {
@@ -60,6 +117,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      bundle_purchases: {
+        Row: {
+          bundle_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          price_paid: number
+          property_id: string | null
+          scheduled_for: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bundle_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          price_paid?: number
+          property_id?: string | null
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bundle_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          price_paid?: number
+          property_id?: string | null
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       coupons: {
         Row: {
@@ -287,6 +383,54 @@ export type Database = {
         }
         Relationships: []
       }
+      owner_subscriptions: {
+        Row: {
+          created_at: string
+          currency: string
+          frequency: string
+          id: string
+          next_visit: string | null
+          owner_id: string
+          price: number
+          property_id: string | null
+          service_category: string
+          service_name: string
+          starts_on: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          frequency?: string
+          id?: string
+          next_visit?: string | null
+          owner_id: string
+          price?: number
+          property_id?: string | null
+          service_category?: string
+          service_name: string
+          starts_on?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          frequency?: string
+          id?: string
+          next_visit?: string | null
+          owner_id?: string
+          price?: number
+          property_id?: string | null
+          service_category?: string
+          service_name?: string
+          starts_on?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -430,6 +574,54 @@ export type Database = {
           title?: string
           updated_at?: string
           zip_code?: string | null
+        }
+        Relationships: []
+      }
+      property_variants: {
+        Row: {
+          bathrooms: number
+          bedrooms: number
+          beds: number
+          created_at: string
+          description: string
+          id: string
+          images: string[]
+          is_active: boolean
+          max_guests: number
+          name: string
+          price: number
+          property_id: string
+          updated_at: string
+        }
+        Insert: {
+          bathrooms?: number
+          bedrooms?: number
+          beds?: number
+          created_at?: string
+          description?: string
+          id?: string
+          images?: string[]
+          is_active?: boolean
+          max_guests?: number
+          name: string
+          price?: number
+          property_id: string
+          updated_at?: string
+        }
+        Update: {
+          bathrooms?: number
+          bedrooms?: number
+          beds?: number
+          created_at?: string
+          description?: string
+          id?: string
+          images?: string[]
+          is_active?: boolean
+          max_guests?: number
+          name?: string
+          price?: number
+          property_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -603,6 +795,57 @@ export type Database = {
         }
         Relationships: []
       }
+      utility_bills: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          due_date: string
+          id: string
+          kind: Database["public"]["Enums"]["bill_kind"]
+          notes: string | null
+          owner_id: string
+          paid_at: string | null
+          period_label: string
+          property_id: string | null
+          provider: string
+          status: Database["public"]["Enums"]["bill_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          due_date: string
+          id?: string
+          kind?: Database["public"]["Enums"]["bill_kind"]
+          notes?: string | null
+          owner_id: string
+          paid_at?: string | null
+          period_label?: string
+          property_id?: string | null
+          provider?: string
+          status?: Database["public"]["Enums"]["bill_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          due_date?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["bill_kind"]
+          notes?: string | null
+          owner_id?: string
+          paid_at?: string | null
+          period_label?: string
+          property_id?: string | null
+          provider?: string
+          status?: Database["public"]["Enums"]["bill_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -613,7 +856,15 @@ export type Database = {
     Enums: {
       ajir_order_status: "pending" | "confirmed" | "completed" | "cancelled"
       app_role: "admin" | "host" | "guest"
-      booking_status: "pending" | "confirmed" | "cancelled" | "completed"
+      bill_kind: "electricity" | "water" | "gas" | "internet" | "other"
+      bill_status: "unpaid" | "paid" | "overdue"
+      booking_status:
+        | "pending"
+        | "confirmed"
+        | "cancelled"
+        | "completed"
+        | "checked_in"
+        | "checked_out"
       coupon_scope: "stays" | "services" | "experiences" | "all"
       discount_type: "percent" | "fixed"
       payment_status:
@@ -760,7 +1011,16 @@ export const Constants = {
     Enums: {
       ajir_order_status: ["pending", "confirmed", "completed", "cancelled"],
       app_role: ["admin", "host", "guest"],
-      booking_status: ["pending", "confirmed", "cancelled", "completed"],
+      bill_kind: ["electricity", "water", "gas", "internet", "other"],
+      bill_status: ["unpaid", "paid", "overdue"],
+      booking_status: [
+        "pending",
+        "confirmed",
+        "cancelled",
+        "completed",
+        "checked_in",
+        "checked_out",
+      ],
       coupon_scope: ["stays", "services", "experiences", "all"],
       discount_type: ["percent", "fixed"],
       payment_status: [
