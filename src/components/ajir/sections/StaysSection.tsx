@@ -119,8 +119,8 @@ export const StaysSection = () => {
         <div className="flex items-center justify-between gap-4 overflow-x-auto pb-2">
           <div className="flex gap-7">
             {categories.map((c) => (
-              <button key={c.id} type="button" onClick={() => setActive(c.id)} className={active === c.id ? "flex min-w-[64px] flex-col items-center gap-1 border-b-2 border-foreground pb-3 text-xs font-bold text-foreground" : "flex min-w-[64px] flex-col items-center gap-1 border-b-2 border-transparent pb-3 text-xs font-bold text-muted-foreground transition hover:border-border hover:text-foreground"}>
-                <span className="text-2xl leading-none">{c.emoji}</span>
+              <button key={c.id} type="button" onClick={() => setActive(c.id)} className={active === c.id ? "flex min-w-[72px] flex-col items-center gap-1 border-b-2 border-foreground pb-3 text-xs font-bold text-foreground" : "flex min-w-[72px] flex-col items-center gap-1 border-b-2 border-transparent pb-3 text-xs font-bold text-muted-foreground transition hover:border-border hover:text-foreground"}>
+                <Icon3D name={c.icon} size={44} className="opacity-90" />
                 <span className="whitespace-nowrap">{c.label}</span>
               </button>
             ))}
