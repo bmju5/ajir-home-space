@@ -13,7 +13,7 @@ import { useAjirAuth } from "@/hooks/use-ajir-auth";
 import type { Database } from "@/integrations/supabase/types";
 
 type Bundle = Database["public"]["Tables"]["ajir_bundles"]["Row"];
-type Purchase = Database["public"]["Tables"]["bundle_purchases"]["Row"] & { ajir_bundles?: { title: string; category: string } | null };
+type Purchase = Database["public"]["Tables"]["bundle_purchases"]["Row"] & { bundle?: { title: string; category: string } | null };
 type Sub = Database["public"]["Tables"]["owner_subscriptions"]["Row"];
 
 const money = (v: number) => `$${Number(v || 0).toFixed(2)}`;
@@ -39,11 +39,14 @@ export const MarketplacePanel = () => {
     if (!user) return;
     const [b, p, s] = await Promise.all([
       supabase.from("ajir_bundles").select("*").eq("is_active", true).order("price"),
-      supabase.from("bundle_purchases").select("*, ajir_bundles(title, category)").eq("owner_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("bundle_purchases").select("*").eq("owner_id", user.id).order("created_at", { ascending: false }),
       supabase.from("owner_subscriptions").select("*").eq("owner_id", user.id).order("created_at", { ascending: false }),
     ]);
     if (b.data) setBundles(b.data);
-    if (p.data) setPurchases(p.data as Purchase[]);
+    if (p.data) {
+      const byId = new Map((b.data ?? []).map((x) => [x.id, x]));
+      setPurchases(p.data.map((row) => ({ ...row, bundle: byId.get(row.bundle_id) ? { title: byId.get(row.bundle_id)!.title, category: byId.get(row.bundle_id)!.category } : null })) as Purchase[]);
+    }
     if (s.data) setSubs(s.data);
   };
   useEffect(() => { void load(); }, [user]);
@@ -123,7 +126,7 @@ export const MarketplacePanel = () => {
           <CardContent className="space-y-2">
             {purchases.map((p) => (
               <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-ajir bg-secondary p-3 text-sm">
-                <div><strong>{p.ajir_bundles?.title ?? "Bundle"}</strong><p className="text-muted-foreground">{money(Number(p.price_paid))} · {p.scheduled_for ?? "anytime"}</p></div>
+                <div><strong>{p.bundle?.title ?? "Bundle"}</strong><p className="text-muted-foreground">{money(Number(p.price_paid))} · {p.scheduled_for ?? "anytime"}</p></div>
                 <Badge>{p.status}</Badge>
               </div>
             ))}
