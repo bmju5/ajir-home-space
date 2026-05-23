@@ -13,6 +13,7 @@ import Map from "./pages/Map.tsx";
 import GiftCards from "./pages/GiftCards.tsx";
 import Offers from "./pages/Offers.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import PropertyDetail from "./pages/PropertyDetail.tsx";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/stays" element={<Stays />} />
+            <Route path="/stays/:id" element={<PropertyDetail />} />
             <Route path="/experiences" element={<Experiences />} />
             <Route path="/services" element={<Services />} />
             <Route path="/map" element={<Map />} />
