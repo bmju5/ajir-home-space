@@ -132,7 +132,7 @@ export const StaysSection = () => {
           {filtered.map((p) => {
             const idx = imgIdx[p.id] ?? 0;
             return (
-              <article key={p.id} className="group cursor-pointer animate-fade-up" onClick={() => { setSelected(p); setBooking({ checkIn: "", checkOut: "", guests: "1", coupon: "" }); }}>
+              <article key={p.id} className="group cursor-pointer animate-fade-up" onClick={() => navigate(`/stays/${p.id}`)}>
                 <div className="relative mb-3 aspect-[1.05/1] overflow-hidden rounded-ajir bg-card shadow-ajir-card">
                   <img src={p.images[idx]} alt={p.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
                   {p.badge && <span className="absolute left-3 top-3 rounded-full bg-card px-3 py-1 text-xs font-bold text-card-foreground shadow-ajir-soft">{p.badge}</span>}
