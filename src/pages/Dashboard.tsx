@@ -213,8 +213,8 @@ const DashboardContent = () => {
   );
 };
 
-const StatCard = ({ title, value }: { title: string; value: number }) => (
-  <Card className="rounded-ajir border-border bg-card"><CardContent className="p-5"><p className="text-sm text-muted-foreground">{title}</p><strong className="text-3xl text-foreground">{value}</strong></CardContent></Card>
+const StatCard = ({ title, value, icon }: { title: string; value: number; icon: Parameters<typeof Icon3D>[0]["name"] }) => (
+  <Card className="rounded-ajir border-border bg-card"><CardContent className="flex items-center gap-3 p-5"><Icon3D name={icon} size={48} /><div><p className="text-sm text-muted-foreground">{title}</p><strong className="text-3xl text-foreground">{value}</strong></div></CardContent></Card>
 );
 
 const TripList = ({ title, trips, onStatus, host = false }: { title: string; trips: Trip[]; onStatus: (id: string, status: BookingRow["status"]) => void; host?: boolean }) => (
@@ -228,8 +228,10 @@ const TripList = ({ title, trips, onStatus, host = false }: { title: string; tri
             <div className="flex flex-wrap justify-between gap-2"><strong>{t.properties?.title}</strong><Badge>{t.status}</Badge></div>
             <p className="text-sm text-muted-foreground">{t.check_in} → {t.check_out} · {t.guests} guests · {money(t.total_price)}</p>
             <div className="flex flex-wrap gap-2">
-              {host && <Button size="sm" className="rounded-full" onClick={() => onStatus(t.id, "confirmed")}><CheckCircle2 /> Confirm</Button>}
-              <Button size="sm" variant="outline" className="rounded-full" onClick={() => onStatus(t.id, "cancelled")}><XCircle /> Cancel</Button>
+              {host && t.status === "pending" && <Button size="sm" className="rounded-full" onClick={() => onStatus(t.id, "confirmed")}><CheckCircle2 /> Confirm</Button>}
+              {t.status === "confirmed" && <Button size="sm" variant="outline" className="rounded-full" onClick={() => onStatus(t.id, "checked_in")}><LogIn /> Check in</Button>}
+              {t.status === "checked_in" && <Button size="sm" variant="outline" className="rounded-full" onClick={() => onStatus(t.id, "checked_out")}><LogOut /> Check out</Button>}
+              {t.status !== "checked_out" && t.status !== "cancelled" && <Button size="sm" variant="ghost" className="rounded-full" onClick={() => onStatus(t.id, "cancelled")}><XCircle /> Cancel</Button>}
             </div>
           </div>
         </div>
