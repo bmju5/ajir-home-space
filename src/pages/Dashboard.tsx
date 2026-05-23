@@ -23,13 +23,11 @@ type GiftCard = Database["public"]["Tables"]["gift_cards"]["Row"];
 type ServiceOrder = Database["public"]["Tables"]["service_orders"]["Row"] & { services?: { title: string; location: string } | null };
 type ExperienceBooking = Database["public"]["Tables"]["experience_bookings"]["Row"] & { experiences?: { title: string; location: string } | null };
 
-type PropertyForm = { title: string; city: string; country: string; price: string; description: string; address: string; maxGuests: string; bedrooms: string; bathrooms: string; amenities: string; images: string };
-const emptyForm: PropertyForm = { title: "", city: "Algiers", country: "Algeria", price: "120", description: "", address: "", maxGuests: "2", bedrooms: "1", bathrooms: "1", amenities: "WiFi, Pool, Kitchen", images: "" };
 const money = (v: number | string) => `$${Number(v || 0).toFixed(2)}`;
 const imageFor = (p?: { images?: string[] | null } | null) => p?.images?.[0] || stayOne;
 
 const DashboardContent = () => {
-  const { user, profile } = useAjirAuth();
+  const { user, profile, signOut } = useAjirAuth();
   const [myProps, setMyProps] = useState<PropertyRow[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [hostBookings, setHostBookings] = useState<Trip[]>([]);
@@ -38,8 +36,6 @@ const DashboardContent = () => {
   const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
   const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
   const [experienceBookings, setExperienceBookings] = useState<ExperienceBooking[]>([]);
-  const [form, setForm] = useState<PropertyForm>(emptyForm);
-  const [loading, setLoading] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -65,24 +61,6 @@ const DashboardContent = () => {
 
   useEffect(() => { void load(); }, [user]);
 
-  const createProperty = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    setLoading(true);
-    const { error } = await supabase.from("properties").insert({
-      host_id: user.id, title: form.title, description: form.description || "A comfortable ajir stay in Algeria.",
-      price: Number(form.price), property_type: "apartment", max_guests: Number(form.maxGuests),
-      bedrooms: Number(form.bedrooms), bathrooms: Number(form.bathrooms), address: form.address, city: form.city, country: form.country,
-      amenities: form.amenities.split(",").map((x) => x.trim()).filter(Boolean),
-      images: form.images.split("\n").map((x) => x.trim()).filter(Boolean), status: "draft",
-    });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("Property created.");
-    setForm(emptyForm);
-    await load();
-  };
-
   const setStatus = async (id: string, status: PropertyRow["status"]) => {
     const { error } = await supabase.from("properties").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
@@ -96,8 +74,12 @@ const DashboardContent = () => {
     await load();
   };
   const setBookingStatus = async (id: string, status: BookingRow["status"]) => {
-    const { error } = await supabase.from("bookings").update({ status }).eq("id", id);
+    const update: Partial<BookingRow> = { status };
+    if (status === "checked_in") update.check_in_time = new Date().toISOString();
+    if (status === "checked_out") update.check_out_time = new Date().toISOString();
+    const { error } = await supabase.from("bookings").update(update).eq("id", id);
     if (error) return toast.error(error.message);
+    toast.success(`Booking ${status.replace("_", " ")}.`);
     await load();
   };
   const removeFavorite = async (propertyId: string) => {
@@ -110,18 +92,26 @@ const DashboardContent = () => {
     <section className="px-5 py-10 md:px-10">
       <div className="mx-auto max-w-[1760px] space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-black text-foreground md:text-3xl">Welcome, {profile?.name ?? user?.email}</h1>
-            <p className="text-sm text-muted-foreground">Manage your listings, trips, gift cards and more.</p>
+          <div className="flex items-center gap-3">
+            <Icon3D name="home" size={56} />
+            <div>
+              <h1 className="text-2xl font-black text-foreground md:text-3xl">Welcome, {profile?.name ?? user?.email}</h1>
+              <p className="text-sm text-muted-foreground">Manage your listings, trips, bills and marketplace.</p>
+            </div>
           </div>
-          <Badge variant="secondary">{user?.email}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">{user?.email}</Badge>
+            <Button variant="outline" size="sm" className="rounded-full" onClick={() => void signOut()}><LogOut /> Sign out</Button>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="h-auto flex-wrap justify-start rounded-ajir bg-secondary p-1">
-            <TabsTrigger value="overview" className="rounded-ajir"><Home /> Overview</TabsTrigger>
+            <TabsTrigger value="overview" className="rounded-ajir"><Icon3D name="home" size={20} /> Overview</TabsTrigger>
             <TabsTrigger value="listings" className="rounded-ajir"><Plus /> Listings</TabsTrigger>
             <TabsTrigger value="bookings" className="rounded-ajir"><CalendarCheck /> Bookings</TabsTrigger>
+            <TabsTrigger value="bills" className="rounded-ajir"><Icon3D name="electricity" size={20} /> Bills</TabsTrigger>
+            <TabsTrigger value="marketplace" className="rounded-ajir"><Icon3D name="bundle" size={20} /> Marketplace</TabsTrigger>
             <TabsTrigger value="services" className="rounded-ajir"><Star /> Services & Experiences</TabsTrigger>
             <TabsTrigger value="wishlist" className="rounded-ajir"><Heart /> Wishlist</TabsTrigger>
             <TabsTrigger value="gift" className="rounded-ajir"><Gift /> Gift cards</TabsTrigger>
@@ -129,31 +119,20 @@ const DashboardContent = () => {
           </TabsList>
 
           <TabsContent value="overview" className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard title="Listings" value={myProps.length} />
-            <StatCard title="My trips" value={trips.length} />
-            <StatCard title="Host requests" value={hostBookings.length} />
-            <StatCard title="Gift cards" value={giftCards.length} />
-            <StatCard title="Service orders" value={serviceOrders.length} />
-            <StatCard title="Experiences booked" value={experienceBookings.length} />
-            <StatCard title="Wishlist" value={favorites.length} />
-            <StatCard title="Payments" value={payments.length} />
+            <StatCard title="Listings" value={myProps.length} icon="home" />
+            <StatCard title="My trips" value={trips.length} icon="map" />
+            <StatCard title="Host requests" value={hostBookings.length} icon="city" />
+            <StatCard title="Gift cards" value={giftCards.length} icon="gift" />
+            <StatCard title="Service orders" value={serviceOrders.length} icon="cleaning" />
+            <StatCard title="Experiences booked" value={experienceBookings.length} icon="heritage" />
+            <StatCard title="Wishlist" value={favorites.length} icon="beach" />
+            <StatCard title="Payments" value={payments.length} icon="bill" />
           </TabsContent>
 
-          <TabsContent value="listings" className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <TabsContent value="listings" className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.1fr]">
             <Card className="rounded-ajir border-border bg-card">
-              <CardHeader><CardTitle>Create a new listing</CardTitle></CardHeader>
-              <CardContent>
-                <form className="grid gap-3" onSubmit={createProperty}>
-                  <div className="space-y-2"><Label>Title</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required /></div>
-                  <div className="grid gap-3 sm:grid-cols-2"><div className="space-y-2"><Label>City</Label><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div><div className="space-y-2"><Label>Country</Label><Input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} /></div></div>
-                  <div className="grid gap-3 sm:grid-cols-4"><div className="space-y-2"><Label>Price</Label><Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></div><div className="space-y-2"><Label>Guests</Label><Input type="number" value={form.maxGuests} onChange={(e) => setForm({ ...form, maxGuests: e.target.value })} /></div><div className="space-y-2"><Label>Beds</Label><Input type="number" value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: e.target.value })} /></div><div className="space-y-2"><Label>Baths</Label><Input type="number" value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: e.target.value })} /></div></div>
-                  <div className="space-y-2"><Label>Address</Label><Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></div>
-                  <div className="space-y-2"><Label>Amenities (comma-separated)</Label><Input value={form.amenities} onChange={(e) => setForm({ ...form, amenities: e.target.value })} /></div>
-                  <div className="space-y-2"><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-                  <div className="space-y-2"><Label>Image URLs (one per line)</Label><Textarea value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} /></div>
-                  <Button className="rounded-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}><Plus /> Create draft</Button>
-                </form>
-              </CardContent>
+              <CardHeader><CardTitle className="flex items-center gap-2"><Icon3D name="home" size={36} /> List your home</CardTitle></CardHeader>
+              <CardContent><ListingWizard onCreated={load} /></CardContent>
             </Card>
             <div className="grid gap-3">
               {myProps.map((p) => (
@@ -162,19 +141,27 @@ const DashboardContent = () => {
                     <img src={imageFor(p)} alt={p.title} className="aspect-[1.3/1] w-full rounded-ajir object-cover" />
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-start justify-between gap-2"><div><strong>{p.title}</strong><p className="text-sm text-muted-foreground">{p.city}, {p.country} · {money(p.price)}/night</p></div><Badge variant={p.status === "published" ? "default" : "secondary"}>{p.status}</Badge></div>
-                      <div className="flex flex-wrap gap-2"><Button size="sm" className="rounded-full" onClick={() => setStatus(p.id, "published")}><CheckCircle2 /> Publish</Button><Button size="sm" variant="secondary" className="rounded-full" onClick={() => setStatus(p.id, "archived")}><XCircle /> Archive</Button><Button size="sm" variant="outline" className="rounded-full" onClick={() => removeProperty(p.id)}><Trash2 /> Delete</Button></div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" className="rounded-full" onClick={() => setStatus(p.id, "published")}><CheckCircle2 /> Publish</Button>
+                        <Button size="sm" variant="secondary" className="rounded-full" onClick={() => setStatus(p.id, "archived")}><XCircle /> Archive</Button>
+                        <Button size="sm" variant="outline" className="rounded-full" onClick={() => window.location.assign(`/stays/db-${p.id}`)}>View</Button>
+                        <Button size="sm" variant="ghost" className="rounded-full" onClick={() => removeProperty(p.id)}><Trash2 /></Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
-              {myProps.length === 0 && <Card className="rounded-ajir border-border bg-card"><CardContent className="p-6 text-muted-foreground">No listings yet.</CardContent></Card>}
+              {myProps.length === 0 && <Card className="rounded-ajir border-border bg-card"><CardContent className="p-6 text-muted-foreground">No listings yet — create your first with the wizard.</CardContent></Card>}
             </div>
           </TabsContent>
 
           <TabsContent value="bookings" className="mt-6 grid gap-6 lg:grid-cols-2">
-            <TripList title="My bookings" trips={trips} onStatus={setBookingStatus} />
+            <TripList title="My trips" trips={trips} onStatus={setBookingStatus} />
             <TripList title="Host booking requests" trips={hostBookings} onStatus={setBookingStatus} host />
           </TabsContent>
+
+          <TabsContent value="bills" className="mt-6"><BillsPanel /></TabsContent>
+          <TabsContent value="marketplace" className="mt-6"><MarketplacePanel /></TabsContent>
 
           <TabsContent value="services" className="mt-6 grid gap-6 lg:grid-cols-2">
             <Card className="rounded-ajir border-border bg-card"><CardHeader><CardTitle>Service orders</CardTitle></CardHeader><CardContent className="grid gap-2">
@@ -191,7 +178,7 @@ const DashboardContent = () => {
             {favorites.map((f) => (
               <Card key={f.id} className="overflow-hidden rounded-ajir border-border bg-card">
                 <img src={imageFor(f.properties)} alt={f.properties?.title ?? "Saved"} className="aspect-[1.4/1] w-full object-cover" />
-                <CardContent className="p-4 space-y-2">
+                <CardContent className="space-y-2 p-4">
                   <strong>{f.properties?.title}</strong>
                   <p className="text-sm text-muted-foreground">{f.properties?.city}, {f.properties?.country}</p>
                   <Button size="sm" variant="outline" className="rounded-full" onClick={() => removeFavorite(f.property_id)}><Trash2 /> Remove</Button>
@@ -204,7 +191,7 @@ const DashboardContent = () => {
           <TabsContent value="gift" className="mt-6 grid gap-2">
             {giftCards.map((c) => (
               <Card key={c.id} className="rounded-ajir border-border bg-card"><CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 text-sm">
-                <div><strong>{c.code}</strong><p className="text-muted-foreground">To {c.recipient_email} · {money(c.amount)} · balance {money(c.balance)} · sent {new Date(c.sent_at).toLocaleDateString()}</p></div>
+                <div className="flex items-center gap-3"><Icon3D name="gift" size={40} /><div><strong>{c.code}</strong><p className="text-muted-foreground">To {c.recipient_email} · {money(c.amount)} · balance {money(c.balance)} · sent {new Date(c.sent_at).toLocaleDateString()}</p></div></div>
                 <Badge>{c.status}</Badge>
               </CardContent></Card>
             ))}
@@ -214,7 +201,7 @@ const DashboardContent = () => {
           <TabsContent value="payments" className="mt-6 grid gap-2">
             {payments.map((p) => (
               <Card key={p.id} className="rounded-ajir border-border bg-card"><CardContent className="flex justify-between p-4 text-sm">
-                <span>{p.provider_payment_id ?? p.id}</span>
+                <span className="flex items-center gap-2"><Icon3D name="bill" size={32} /> {p.provider_payment_id ?? p.id}</span>
                 <strong>{money(p.amount)} · {p.status}</strong>
               </CardContent></Card>
             ))}
