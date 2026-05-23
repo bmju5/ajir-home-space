@@ -14,19 +14,21 @@ import type { Database } from "@/integrations/supabase/types";
 import type { PropertyRow } from "@/types/ajir";
 import stayOne from "@/assets/ajir-stays-1.jpg";
 
+import { Icon3D, type Icon3DName } from "@/components/ajir/Icon3D";
+
 type Coupon = Database["public"]["Tables"]["coupons"]["Row"];
 
-const categories = [
-  { id: "all", label: "All", emoji: "✦" },
-  { id: "Algiers", label: "Algiers", emoji: "🏛️" },
-  { id: "Oran", label: "Oran", emoji: "🌊" },
-  { id: "Casbah", label: "Casbah", emoji: "🕌" },
-  { id: "Beach", label: "Beachfront", emoji: "🏖️" },
-  { id: "Desert", label: "Sahara", emoji: "🐪" },
-  { id: "Mountain", label: "Mountains", emoji: "⛰️" },
-  { id: "Heritage", label: "Heritage", emoji: "🏺" },
-  { id: "Bridge", label: "Bridges", emoji: "🌉" },
-  { id: "Oasis", label: "Oases", emoji: "🌴" },
+const categories: Array<{ id: string; label: string; icon: Icon3DName }> = [
+  { id: "all", label: "All", icon: "home" },
+  { id: "Algiers", label: "Algiers", icon: "city" },
+  { id: "Oran", label: "Oran", icon: "beach" },
+  { id: "Casbah", label: "Casbah", icon: "casbah" },
+  { id: "Beach", label: "Beachfront", icon: "beach" },
+  { id: "Desert", label: "Sahara", icon: "desert" },
+  { id: "Mountain", label: "Mountains", icon: "mountain" },
+  { id: "Heritage", label: "Heritage", icon: "heritage" },
+  { id: "Bridge", label: "Bridges", icon: "bridge" },
+  { id: "Oasis", label: "Oases", icon: "oasis" },
 ];
 
 const matchCategory = (p: AjirProperty, cat: string) => {
