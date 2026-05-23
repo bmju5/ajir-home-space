@@ -14,19 +14,21 @@ import type { Database } from "@/integrations/supabase/types";
 import type { PropertyRow } from "@/types/ajir";
 import stayOne from "@/assets/ajir-stays-1.jpg";
 
+import { Icon3D, type Icon3DName } from "@/components/ajir/Icon3D";
+
 type Coupon = Database["public"]["Tables"]["coupons"]["Row"];
 
-const categories = [
-  { id: "all", label: "All", emoji: "✦" },
-  { id: "Algiers", label: "Algiers", emoji: "🏛️" },
-  { id: "Oran", label: "Oran", emoji: "🌊" },
-  { id: "Casbah", label: "Casbah", emoji: "🕌" },
-  { id: "Beach", label: "Beachfront", emoji: "🏖️" },
-  { id: "Desert", label: "Sahara", emoji: "🐪" },
-  { id: "Mountain", label: "Mountains", emoji: "⛰️" },
-  { id: "Heritage", label: "Heritage", emoji: "🏺" },
-  { id: "Bridge", label: "Bridges", emoji: "🌉" },
-  { id: "Oasis", label: "Oases", emoji: "🌴" },
+const categories: Array<{ id: string; label: string; icon: Icon3DName }> = [
+  { id: "all", label: "All", icon: "home" },
+  { id: "Algiers", label: "Algiers", icon: "city" },
+  { id: "Oran", label: "Oran", icon: "beach" },
+  { id: "Casbah", label: "Casbah", icon: "casbah" },
+  { id: "Beach", label: "Beachfront", icon: "beach" },
+  { id: "Desert", label: "Sahara", icon: "desert" },
+  { id: "Mountain", label: "Mountains", icon: "mountain" },
+  { id: "Heritage", label: "Heritage", icon: "heritage" },
+  { id: "Bridge", label: "Bridges", icon: "bridge" },
+  { id: "Oasis", label: "Oases", icon: "oasis" },
 ];
 
 const matchCategory = (p: AjirProperty, cat: string) => {
@@ -117,8 +119,8 @@ export const StaysSection = () => {
         <div className="flex items-center justify-between gap-4 overflow-x-auto pb-2">
           <div className="flex gap-7">
             {categories.map((c) => (
-              <button key={c.id} type="button" onClick={() => setActive(c.id)} className={active === c.id ? "flex min-w-[64px] flex-col items-center gap-1 border-b-2 border-foreground pb-3 text-xs font-bold text-foreground" : "flex min-w-[64px] flex-col items-center gap-1 border-b-2 border-transparent pb-3 text-xs font-bold text-muted-foreground transition hover:border-border hover:text-foreground"}>
-                <span className="text-2xl leading-none">{c.emoji}</span>
+              <button key={c.id} type="button" onClick={() => setActive(c.id)} className={active === c.id ? "flex min-w-[72px] flex-col items-center gap-1 border-b-2 border-foreground pb-3 text-xs font-bold text-foreground" : "flex min-w-[72px] flex-col items-center gap-1 border-b-2 border-transparent pb-3 text-xs font-bold text-muted-foreground transition hover:border-border hover:text-foreground"}>
+                <Icon3D name={c.icon} size={44} className="opacity-90" />
                 <span className="whitespace-nowrap">{c.label}</span>
               </button>
             ))}
@@ -130,7 +132,7 @@ export const StaysSection = () => {
           {filtered.map((p) => {
             const idx = imgIdx[p.id] ?? 0;
             return (
-              <article key={p.id} className="group cursor-pointer animate-fade-up" onClick={() => { setSelected(p); setBooking({ checkIn: "", checkOut: "", guests: "1", coupon: "" }); }}>
+              <article key={p.id} className="group cursor-pointer animate-fade-up" onClick={() => navigate(`/stays/${p.id}`)}>
                 <div className="relative mb-3 aspect-[1.05/1] overflow-hidden rounded-ajir bg-card shadow-ajir-card">
                   <img src={p.images[idx]} alt={p.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
                   {p.badge && <span className="absolute left-3 top-3 rounded-full bg-card px-3 py-1 text-xs font-bold text-card-foreground shadow-ajir-soft">{p.badge}</span>}
